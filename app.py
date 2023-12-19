@@ -1,45 +1,101 @@
+# Dicas de templates: https://pypi.org/project/dash-bootstrap-templates/
 
-# Import packages
-from dash import Dash, html, dash_table, dcc, callback, Output, Input
-import pandas as pd
+# dockerizacao: https://python.plainenglish.io/dockerizing-plotly-dash-5c23009fc10b
+
+# Dica de deploy o google cloud: https://medium.com/kunder/deploying-dash-to-cloud-run-5-minutes-c026eeea46d4
+
+#importando as bibliotecas
+from dash import Dash, Input, Output, State
+import dash_core_components as dcc
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template
+import plotly.graph_objects as go
+import dash_html_components as html
 import plotly.express as px
-import dash_mantine_components as dmc
 
-# Incorporate data
-df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
+import pandas as pd
 
-# Initialize the app - incorporate a Dash Mantine theme
-external_stylesheets = [dmc.theme.DEFAULT_COLORS]
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css")
 
-# App layout
-app.layout = dmc.Container([
-    dmc.Title('My First App with Data, Graph, and Controls', color="blue", size="h3"),
-    dmc.RadioGroup(
-            [dmc.Radio(i, value=i) for i in  ['pop', 'lifeExp', 'gdpPercap']],
-            id='my-dmc-radio-item',
-            value='lifeExp',
-            size="sm"
-        ),
-    dmc.Grid([
-        dmc.Col([
-            dash_table.DataTable(data=df.to_dict('records'), page_size=12, style_table={'overflowX': 'auto'})
-        ], span=6),
-        dmc.Col([
-            dcc.Graph(figure={}, id='graph-placeholder')
-        ], span=6),
-    ]),
 
-], fluid=True)
+tabela = pd.read_csv('/content/drive/MyDrive/tabelao.csv')
 
-# Add controls to build the interaction
-@callback(
-    Output(component_id='graph-placeholder', component_property='figure'),
-    Input(component_id='my-dmc-radio-item', component_property='value')
-)
-def update_graph(col_chosen):
-    fig = px.histogram(df, x='continent', y=col_chosen, histfunc='avg')
-    return fig
+tabela.reset_index(inplace=True)
+tabela.drop(['Unnamed: 0', 'index'], axis=1, inplace=True)
+
+
+#escolhendo o tema
+app = Dash(__name__, external_stylesheets=[dbc.themes.SOLAR, dbc_css])
+
+templates = 'solar'
+
+load_figure_template(templates)
+
+#criando um grid
+app.layout = html.Div([
+    dbc.Row([html.H1('Campeonato Brasileiro', style={'text-align': 'center', 'fontSize': 75})]),
+    html.Br(),
+    dbc.Row([
+        dbc.Col([dbc.Card([
+          html.H2('Seleção de Ano', className='dbc'),
+          dcc.Dropdown(id='toggle-rangeslider',
+                       className="dbc",
+                     options=list(tabela['ano'].unique())),
+          html.Br(),
+
+
+          ])],className="dbc dbc-ag-grid", md=2),
+
+
+        dbc.Col([dcc.Graph(id='graph')], md=5),
+
+
+        dbc.Col([dcc.Graph(id='graph_2'),
+                 dbc.Row([
+                     dbc.Col([
+                         dcc.Dropdown(id='tipo_result',
+                              className="dbc",
+                              options=['gols_contra_acum','gols_pro_acum', 'gols_saldo_acum', 'pontos_acum'])
+                     ]),
+                     dbc.Col([
+                         dcc.Dropdown(id='drop_2',
+                         multi=True,
+                         className="dbc",
+                         options=list(tabela['time'].unique()))])
+                     ])], md=5)
+    ])
+
+])
+
+@app.callback(
+    Output('graph', "figure"),
+    Input('toggle-rangeslider', "value"))
+
+def tabela_ano(ano):
+
+  base = tabela.loc[tabela['ano'] == ano]
+
+  fig = px.bar(base, x='time', y='pontos', title=f'Campeonato Brasileiro de {ano}')
+
+
+  return fig
+
+@app.callback(
+    Output('graph_2', "figure"),
+    Input('drop_2', "value"),
+    Input('toggle-rangeslider', "value"),
+    Input('tipo_result', "value"))
+
+def tabela_ano(time, ano, result):
+
+  base = tabela.loc[tabela['ano'] == ano]
+
+  base = base.loc[base['time'].isin(time)]
+
+  fig = px.line(base, x='data', y=result, color='time')
+
+  return fig
+
 
 # Run the App
 if __name__ == '__main__':
