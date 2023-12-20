@@ -18,7 +18,7 @@ import pandas as pd
 dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css")
 
 
-tabela = pd.read_csv('/content/drive/MyDrive/tabelao.csv')
+tabela = pd.read_csv('./data/tabelao.csv')
 
 tabela.reset_index(inplace=True)
 tabela.drop(['Unnamed: 0', 'index'], axis=1, inplace=True)
