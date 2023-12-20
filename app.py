@@ -27,6 +27,8 @@ tabela.drop(['Unnamed: 0', 'index'], axis=1, inplace=True)
 #escolhendo o tema
 app = Dash(__name__, external_stylesheets=[dbc.themes.SOLAR, dbc_css])
 
+server = app.server
+
 templates = 'solar'
 
 load_figure_template(templates)
