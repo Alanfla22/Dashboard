@@ -77,7 +77,7 @@ def tabela_ano(ano):
 
   base = tabela.loc[tabela['ano'] == ano]
 
-  fig = px.bar(base, x='time', y='pontos', title=f'Campeonato Brasileiro de {ano}')
+  fig = px.histogram(base, x='time', y='pontos', title=f'Campeonato Brasileiro de {ano}')
 
 
   return fig
