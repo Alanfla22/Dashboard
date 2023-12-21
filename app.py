@@ -65,6 +65,20 @@ app.layout = html.Div([
                          className="dbc",
                          options=list(tabela['time'].unique()))])
                      ])], md=5)
+    ]),
+
+    dbc.Row([
+        dbc.Col([], md=2),
+        dbc.Col([
+            dcc.Graph(id='graph_3'),
+            dcc.Dropdown(
+                id='lista_3',
+                options=list(tabela['time'].unique()),
+                multi=True,
+                className='dbc'
+            )
+        ], md=5),
+        dbc.Col([], md=5)
     ])
 
 ])
@@ -79,7 +93,8 @@ def tabela_ano(ano):
 
   fig = px.histogram(base, x='time', y='pontos', title=f'Campeonato Brasileiro de {ano}')
 
-
+  fig.update_xaxes(categoryorder='total descending')
+    
   return fig
 
 @app.callback(
@@ -94,9 +109,38 @@ def tabela_ano(time, ano, result):
 
   base = base.loc[base['time'].isin(time)]
 
-  fig = px.line(base, x='data', y=result, color='time')
+  if result == 'gols_saldo_acum':
 
-  return fig
+    fig = go.Figure(data=[go.Candlestick(x=base['data'],
+                open=base['gols_saldo_acum_ini'],
+                high=base['gols_saldo_acum_max'],
+                low=base['gols_saldo_acum_min'],
+                close=base['gols_saldo_acum'])])
+
+    fig.update_layout(xaxis_rangeslider_visible=False)
+    fig.update_traces(increasing_line_color='#b58900', decreasing_line_color='#e83e8c')
+    
+
+  elif result != 'gols_saldo_acum':
+
+    fig = px.line(base, x='data', y=result, color='time')
+
+  return fig  
+
+@app.callback(
+    Output('graph_3', "figure"),
+    Input('toggle-rangeslider', "value"),
+    Input('lista_3', "value"))  
+
+def tabela_resultado(ano, time):
+
+  base = tabela.loc[tabela['ano'] == ano]
+
+  base = base.loc[base['time'].isin(time)]
+
+  fig = px.histogram(base, x='time', color='resultado', barmode='group')
+
+  return fig  
 
 
 # Run the App
