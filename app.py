@@ -42,7 +42,8 @@ app.layout = html.Div([
           html.H2('Seleção de Ano', className='dbc'),
           dcc.Dropdown(id='toggle-rangeslider',
                        className="dbc",
-                     options=list(tabela['ano'].unique())),
+                     options=list(tabela['ano'].unique()),
+                       value=2019),
           html.Br(),
 
 
@@ -57,28 +58,25 @@ app.layout = html.Div([
                      dbc.Col([
                          dcc.Dropdown(id='tipo_result',
                               className="dbc",
-                              options=['gols_contra_acum','gols_pro_acum', 'gols_saldo_acum', 'pontos_acum'])
+                              options=['gols_contra_acum','gols_pro_acum', 'gols_saldo_acum', 'pontos_acum'],
+                              value= 'pontos_acum')
                      ]),
                      dbc.Col([
-                         dcc.Dropdown(id='drop_2',
+                         dcc.Dropdown(id='lista_2',
                          multi=True,
                          className="dbc",
-                         options=list(tabela['time'].unique()))])
+                         options=list(tabela['time'].unique()),
+                         value='Flamengo')])
                      ])], md=5)
     ]),
 
     dbc.Row([
         dbc.Col([], md=2),
+        dbc.Col([], md=5),
         dbc.Col([
-            dcc.Graph(id='graph_3'),
-            dcc.Dropdown(
-                id='lista_3',
-                options=list(tabela['time'].unique()),
-                multi=True,
-                className='dbc'
-            )
-        ], md=5),
-        dbc.Col([], md=5)
+            dcc.Graph(id='graph_3')
+        ], md=5)
+
     ])
 
 ])
@@ -94,12 +92,12 @@ def tabela_ano(ano):
   fig = px.histogram(base, x='time', y='pontos', title=f'Campeonato Brasileiro de {ano}')
 
   fig.update_xaxes(categoryorder='total descending')
-    
+
   return fig
 
 @app.callback(
     Output('graph_2', "figure"),
-    Input('drop_2', "value"),
+    Input('lista_2', "value"),
     Input('toggle-rangeslider', "value"),
     Input('tipo_result', "value"))
 
@@ -119,18 +117,18 @@ def tabela_ano(time, ano, result):
 
     fig.update_layout(xaxis_rangeslider_visible=False)
     fig.update_traces(increasing_line_color='#b58900', decreasing_line_color='#e83e8c')
-    
+
 
   elif result != 'gols_saldo_acum':
 
-    fig = px.line(base, x='data', y=result, color='time')
+    fig = px.line(base, x='data', y=result, color='time', title=f'Evolução dos {result}')
 
-  return fig  
+  return fig
 
 @app.callback(
     Output('graph_3', "figure"),
     Input('toggle-rangeslider', "value"),
-    Input('lista_3', "value"))  
+    Input('lista_2', "value"))
 
 def tabela_resultado(ano, time):
 
@@ -138,9 +136,9 @@ def tabela_resultado(ano, time):
 
   base = base.loc[base['time'].isin(time)]
 
-  fig = px.histogram(base, x='time', color='resultado', barmode='group')
+  fig = px.histogram(base, x='time', color='resultado', barmode='group', title=f'Resultados')
 
-  return fig  
+  return fig
 
 
 # Run the App
