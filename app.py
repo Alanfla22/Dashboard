@@ -20,10 +20,6 @@ dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.
 
 tabela = pd.read_csv('./data/tabelao.csv')
 
-tabela.reset_index(inplace=True)
-tabela.drop(['Unnamed: 0', 'index'], axis=1, inplace=True)
-
-
 #escolhendo o tema
 app = Dash(__name__, external_stylesheets=[dbc.themes.SOLAR, dbc_css])
 
